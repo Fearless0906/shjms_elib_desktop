@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { fetchBooks } from "./server/api";
+import { borrowBook, fetchBooks } from "./server/api";
 import "./App.css";
 
 interface Book {
@@ -122,11 +122,18 @@ function App() {
   const handleBorrowSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // TODO: Replace with actual API call
+      const borrowData = {
+        book: borrowRequest.bookId,
+        borrow_date: borrowRequest.borrowDate,
+        due_date: borrowRequest.returnDate,
+        purpose: borrowRequest.purpose || undefined,
+      };
+      await borrowBook(borrowData);
       console.log("Borrow request submitted:", borrowRequest);
       alert("Borrow request submitted successfully!");
       setShowBorrowModal(false);
       setSelectedBook(null);
+      searchBooks(searchQuery, page);
     } catch (err: any) {
       alert("Failed to submit borrow request: " + err.message);
     }

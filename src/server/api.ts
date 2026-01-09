@@ -3,11 +3,12 @@ import axios from "axios";
 export const BASE_URL =
   import.meta.env.VITE_BASE_URL || "http://192.168.2.175:8000/api/v1";
 
-const getAuthHeaders = (token: string) => ({
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-});
+export type BorrowBookPayload = {
+  book: number;
+  borrow_date: string;
+  due_date: string;
+  purpose?: string;
+};
 
 export const fetchBooks = async (page = 1, search = "") => {
   try {
@@ -22,7 +23,7 @@ export const fetchBooks = async (page = 1, search = "") => {
   }
 };
 
-export const borrowBook = async (borrowData: string) => {
+export const borrowBook = async (borrowData: BorrowBookPayload) => {
   try {
     const response = await axios.post(`${BASE_URL}/borrow/`, borrowData);
     return response.data;
