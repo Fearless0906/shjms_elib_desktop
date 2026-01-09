@@ -22,7 +22,7 @@ interface Book {
   subject: string;
   description: string;
   additional_author: string;
-  status: string;
+  status: string | null;
   date_processed: string;
   copies: number;
   book_cover: string | null;
@@ -41,7 +41,7 @@ interface BorrowRequest {
   bookTitle: string;
   author: string;
   isbn: string;
-  borrowDate: string;
+  dueDate: string;
   returnDate: string;
   purpose: string;
 }
@@ -90,8 +90,23 @@ function App() {
     searchBooks(searchQuery, 1);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
+  const normalizeStatus = (status: string | null | undefined) =>
+    (status ?? "").toLowerCase();
+
+  const getEffectiveStatus = (book: Pick<Book, "status" | "copies">) => {
+    const rawStatus = book.status?.trim();
+    if (rawStatus) return rawStatus;
+    return book.copies > 0 ? "available" : "unavailable";
+  };
+
+  const formatStatusLabel = (status: string | null | undefined) => {
+    const s = (status ?? "").trim();
+    if (!s) return "Unknown";
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  };
+
+  const getStatusColor = (status: string | null | undefined) => {
+    switch (normalizeStatus(status)) {
       case "available":
         return "#10b981";
       case "borrowed":
@@ -112,7 +127,7 @@ function App() {
       bookTitle: book.title,
       author: book.author,
       isbn: book.isbn,
-      borrowDate: new Date().toISOString().split("T")[0],
+      dueDate: new Date().toISOString().split("T")[0],
       returnDate: "",
       purpose: "",
     });
@@ -124,8 +139,8 @@ function App() {
     try {
       const borrowData = {
         book: borrowRequest.bookId,
-        borrow_date: borrowRequest.borrowDate,
-        due_date: borrowRequest.returnDate,
+        due_date: borrowRequest.dueDate,
+        return_date: borrowRequest.returnDate,
         purpose: borrowRequest.purpose || undefined,
       };
       await borrowBook(borrowData);
@@ -229,9 +244,15 @@ function App() {
                   <div className="book-status-badge">
                     <span
                       className="status-dot"
-                      style={{ backgroundColor: getStatusColor(book.status) }}
+                      style={{
+                        backgroundColor: getStatusColor(
+                          getEffectiveStatus(book)
+                        ),
+                      }}
                     ></span>
-                    <span className="status-text">{book.status}</span>
+                    <span className="status-text">
+                      {formatStatusLabel(getEffectiveStatus(book))}
+                    </span>
                   </div>
                 </div>
 
@@ -291,9 +312,11 @@ function App() {
                   <button
                     className="borrow-button"
                     onClick={() => handleBorrowClick(book)}
-                    disabled={book.status.toLowerCase() !== "available"}
+                    disabled={
+                      normalizeStatus(getEffectiveStatus(book)) !== "available"
+                    }
                   >
-                    {book.status.toLowerCase() === "available"
+                    {normalizeStatus(getEffectiveStatus(book)) === "available"
                       ? "Borrow Book"
                       : "Unavailable"}
                   </button>

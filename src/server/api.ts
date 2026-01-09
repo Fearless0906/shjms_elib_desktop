@@ -5,9 +5,8 @@ export const BASE_URL =
 
 export type BorrowBookPayload = {
   book: number;
-  borrow_date: string;
+  return_date: string;
   due_date: string;
-  purpose?: string;
 };
 
 export const fetchBooks = async (page = 1, search = "") => {
