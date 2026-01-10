@@ -3,10 +3,11 @@ import axios from "axios";
 export const BASE_URL =
   import.meta.env.VITE_BASE_URL || "http://192.168.2.175:8000/api/v1";
 
-export type BorrowBookPayload = {
-  book: number;
-  return_date: string;
-  due_date: string;
+export type CreateBorrowRequestPayload = {
+  status?: string | null;
+  response_notes?: string;
+  student?: number | null;
+  book: number | null;
 };
 
 export const fetchBooks = async (page = 1, search = "") => {
@@ -22,12 +23,21 @@ export const fetchBooks = async (page = 1, search = "") => {
   }
 };
 
-export const borrowBook = async (borrowData: BorrowBookPayload) => {
+export const createBorrowRequest = async (
+  payload: CreateBorrowRequestPayload
+) => {
   try {
-    const response = await axios.post(`${BASE_URL}/borrow/`, borrowData);
+    const response = await axios.post(
+      `${BASE_URL}/borrow/requests/create/`,
+      payload
+    );
     return response.data;
   } catch (error: any) {
-    console.error("Error borrowing book:", error);
-    throw new Error(error.response?.data?.message || "Failed to borrow book");
+    console.error("Error creating borrow request:", error);
+    throw new Error(
+      error.response?.data?.message || "Failed to create borrow request"
+    );
   }
 };
+
+export const borrowBook = createBorrowRequest;

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { borrowBook, fetchBooks } from "./server/api";
+import { createBorrowRequest, fetchBooks } from "./server/api";
 import "./App.css";
 
 interface Book {
@@ -41,9 +41,9 @@ interface BorrowRequest {
   bookTitle: string;
   author: string;
   isbn: string;
-  dueDate: string;
-  returnDate: string;
-  purpose: string;
+  status: string;
+  responseNotes: string;
+  studentId: string;
 }
 
 function App() {
@@ -60,9 +60,9 @@ function App() {
     bookTitle: "",
     author: "",
     isbn: "",
-    borrowDate: new Date().toISOString().split("T")[0],
-    returnDate: "",
-    purpose: "",
+    status: "pending",
+    responseNotes: "",
+    studentId: "",
   });
 
   const searchBooks = async (searchTerm: string, pageNum: number) => {
@@ -127,9 +127,9 @@ function App() {
       bookTitle: book.title,
       author: book.author,
       isbn: book.isbn,
-      dueDate: new Date().toISOString().split("T")[0],
-      returnDate: "",
-      purpose: "",
+      status: "pending",
+      responseNotes: "",
+      studentId: "",
     });
     setShowBorrowModal(true);
   };
@@ -137,13 +137,16 @@ function App() {
   const handleBorrowSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const borrowData = {
+      const payload = {
+        status: borrowRequest.status.trim() || "pending",
+        response_notes: borrowRequest.responseNotes,
+        student: borrowRequest.studentId.trim()
+          ? Number(borrowRequest.studentId)
+          : null,
         book: borrowRequest.bookId,
-        due_date: borrowRequest.dueDate,
-        return_date: borrowRequest.returnDate,
-        purpose: borrowRequest.purpose || undefined,
       };
-      await borrowBook(borrowData);
+
+      await createBorrowRequest(payload);
       console.log("Borrow request submitted:", borrowRequest);
       alert("Borrow request submitted successfully!");
       setShowBorrowModal(false);
@@ -382,8 +385,9 @@ function App() {
                 <h3>Book Information</h3>
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Book Title</label>
+                    <label htmlFor="borrow-book-title">Book Title</label>
                     <input
+                      id="borrow-book-title"
                       type="text"
                       value={borrowRequest.bookTitle}
                       disabled
@@ -391,8 +395,9 @@ function App() {
                     />
                   </div>
                   <div className="form-group">
-                    <label>Author</label>
+                    <label htmlFor="borrow-book-author">Author</label>
                     <input
+                      id="borrow-book-author"
                       type="text"
                       value={borrowRequest.author}
                       disabled
@@ -402,8 +407,9 @@ function App() {
                 </div>
                 <div className="form-row">
                   <div className="form-group">
-                    <label>ISBN</label>
+                    <label htmlFor="borrow-book-isbn">ISBN</label>
                     <input
+                      id="borrow-book-isbn"
                       type="text"
                       value={borrowRequest.isbn}
                       disabled
@@ -411,8 +417,9 @@ function App() {
                     />
                   </div>
                   <div className="form-group">
-                    <label>Call Number</label>
+                    <label htmlFor="borrow-book-callnumber">Call Number</label>
                     <input
+                      id="borrow-book-callnumber"
                       type="text"
                       value={selectedBook.call_number}
                       disabled
@@ -423,56 +430,37 @@ function App() {
               </div>
 
               <div className="form-section">
-                <h3>Borrow Details</h3>
+                <h3>Request Details</h3>
                 <div className="form-row">
                   <div className="form-group">
-                    <label>
-                      Borrow Date <span className="required">*</span>
-                    </label>
+                    <label htmlFor="borrow-student">Student (ID)</label>
                     <input
-                      type="date"
-                      value={borrowRequest.borrowDate}
+                      id="borrow-student"
+                      type="number"
+                      value={borrowRequest.studentId}
                       onChange={(e) =>
                         setBorrowRequest({
                           ...borrowRequest,
-                          borrowDate: e.target.value,
+                          studentId: e.target.value,
                         })
                       }
-                      required
-                      className="form-input"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>
-                      Return Date <span className="required">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      value={borrowRequest.returnDate}
-                      onChange={(e) =>
-                        setBorrowRequest({
-                          ...borrowRequest,
-                          returnDate: e.target.value,
-                        })
-                      }
-                      required
-                      min={borrowRequest.borrowDate}
                       className="form-input"
                     />
                   </div>
                 </div>
                 <div className="form-group">
-                  <label>Purpose</label>
+                  <label htmlFor="borrow-notes">Notes</label>
                   <textarea
-                    value={borrowRequest.purpose}
+                    id="borrow-notes"
+                    value={borrowRequest.notes}
                     onChange={(e) =>
                       setBorrowRequest({
                         ...borrowRequest,
-                        purpose: e.target.value,
+                        notes: e.target.value,
                       })
                     }
                     className="form-textarea"
-                    placeholder="Enter the purpose of borrowing (optional)"
+                    placeholder="Enter notes (optional)"
                     rows={3}
                   />
                 </div>
