@@ -42,8 +42,10 @@ interface BorrowRequest {
   author: string;
   isbn: string;
   status: string;
+  notes: string;
   responseNotes: string;
   studentId: string;
+  requestDate: string;
 }
 
 function App() {
@@ -61,8 +63,10 @@ function App() {
     author: "",
     isbn: "",
     status: "pending",
+    notes: "",
     responseNotes: "",
     studentId: "",
+    requestDate: "",
   });
 
   const searchBooks = async (searchTerm: string, pageNum: number) => {
@@ -128,8 +132,10 @@ function App() {
       author: book.author,
       isbn: book.isbn,
       status: "pending",
+      notes: "",
       responseNotes: "",
       studentId: "",
+      requestDate: "",
     });
     setShowBorrowModal(true);
   };
@@ -139,7 +145,7 @@ function App() {
     try {
       const payload = {
         status: borrowRequest.status.trim() || "pending",
-        response_notes: borrowRequest.responseNotes,
+        notes: borrowRequest.notes,
         student: borrowRequest.studentId.trim()
           ? Number(borrowRequest.studentId)
           : null,
@@ -442,6 +448,21 @@ function App() {
                         setBorrowRequest({
                           ...borrowRequest,
                           studentId: e.target.value,
+                        })
+                      }
+                      className="form-input"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="borrow-request-date">Request Date</label>
+                    <input
+                      id="borrow-request-date"
+                      type="date"
+                      value={borrowRequest.requestDate}
+                      onChange={(e) =>
+                        setBorrowRequest({
+                          ...borrowRequest,
+                          requestDate: e.target.value,
                         })
                       }
                       className="form-input"
