@@ -150,6 +150,7 @@ function App() {
           ? Number(borrowRequest.studentId)
           : null,
         book: borrowRequest.bookId,
+        response_date: new Date().toISOString(),
       };
 
       await createBorrowRequest(payload);
@@ -171,7 +172,7 @@ function App() {
   return (
     <div className="app-container">
       <header className="app-header">
-        <h1>eLabrary Book Search</h1>
+        <h1>Library Book Search</h1>
         <p className="subtitle">Search and discover available books</p>
       </header>
 
@@ -442,27 +443,12 @@ function App() {
                     <label htmlFor="borrow-student">Student (ID)</label>
                     <input
                       id="borrow-student"
-                      type="number"
+                      type="text"
                       value={borrowRequest.studentId}
                       onChange={(e) =>
                         setBorrowRequest({
                           ...borrowRequest,
                           studentId: e.target.value,
-                        })
-                      }
-                      className="form-input"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="borrow-request-date">Request Date</label>
-                    <input
-                      id="borrow-request-date"
-                      type="date"
-                      value={borrowRequest.requestDate}
-                      onChange={(e) =>
-                        setBorrowRequest({
-                          ...borrowRequest,
-                          requestDate: e.target.value,
                         })
                       }
                       className="form-input"
