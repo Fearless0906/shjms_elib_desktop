@@ -5,7 +5,7 @@
   asar: true,
   productName: "SHJMS DESKTOP",
   directories: {
-    output: "release/${version}",
+    output: "release-build/${version}",
   },
   files: ["dist", "dist-electron"],
   mac: {
