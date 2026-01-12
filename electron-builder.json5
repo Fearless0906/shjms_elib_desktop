@@ -13,6 +13,10 @@
     artifactName: "${productName}-Mac-${version}-Installer.${ext}",
   },
   win: {
+    // Avoid downloading/extracting winCodeSign (symlink privilege issue on some Windows setups)
+    // Local/dev builds will still work; code signing can be enabled later when certificates are configured.
+    signAndEditExecutable: false,
+    icon: "src/assets/icon.ico",
     target: [
       {
         target: "nsis",

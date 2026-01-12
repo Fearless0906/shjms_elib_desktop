@@ -53,6 +53,7 @@ function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [showBorrowModal, setShowBorrowModal] = useState(false);
@@ -70,6 +71,14 @@ function App() {
   });
 
   const searchBooks = async (searchTerm: string, pageNum: number) => {
+    if (!navigator.onLine) {
+      setError(
+        "No network connection. Please check your internet and try again."
+      );
+      setBooks([]);
+      return;
+    }
+
     setLoading(true);
     setError("");
     try {
@@ -83,6 +92,19 @@ function App() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     searchBooks(searchQuery, page);
@@ -142,6 +164,12 @@ function App() {
 
   const handleBorrowSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!navigator.onLine) {
+      alert(
+        "No network connection. Please connect to the internet and try again."
+      );
+      return;
+    }
     try {
       const payload = {
         status: borrowRequest.status.trim() || "pending",
@@ -172,8 +200,14 @@ function App() {
   return (
     <div className="app-container">
       <header className="app-header">
-        <h1>Library Book Search</h1>
-        <p className="subtitle">Search and discover available books</p>
+        <img src="/icon.ico" alt="Library Logo" className="app-logo" />
+        <div>
+          <h1>Library Book Search</h1>
+          <p className="subtitle">
+            Search and discover available books • Network:{" "}
+            {isOnline ? "Online" : "Offline"}
+          </p>
+        </div>
       </header>
 
       <div className="search-section">
@@ -215,7 +249,7 @@ function App() {
         </div>
       ) : (
         <>
-          <div className="results-info">
+          {/* <div className="results-info">
             {books.length > 0 ? (
               <p>
                 Found {books.length} book{books.length !== 1 ? "s" : ""}
@@ -223,7 +257,7 @@ function App() {
             ) : (
               <p>No books found. Try a different search term.</p>
             )}
-          </div>
+          </div> */}
 
           <div className="books-grid">
             {books.map((book) => (
